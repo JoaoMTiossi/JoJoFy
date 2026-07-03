@@ -9,6 +9,8 @@ import pipeRoutes from "./routes/pipes.js";
 import phaseRoutes from "./routes/phases.js";
 import fieldRoutes from "./routes/fields.js";
 import labelRoutes from "./routes/labels.js";
+import cardRoutes from "./routes/cards.js";
+import commentRoutes from "./routes/comments.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
@@ -24,6 +26,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(phaseRoutes, { prefix: "/api" });
   await app.register(fieldRoutes, { prefix: "/api" });
   await app.register(labelRoutes, { prefix: "/api" });
+  await app.register(cardRoutes, { prefix: "/api" });
+  await app.register(commentRoutes, { prefix: "/api" });
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof HttpError) {
