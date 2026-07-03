@@ -4,26 +4,24 @@ import { useAuth } from "./auth/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
+import PipeBoardPage from "./pages/PipeBoardPage";
+import { Layout } from "./components/ui/Layout";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center text-slate-500">Carregando...</div>
-    );
+    return <div className="flex h-screen items-center justify-center text-slate-500">Carregando...</div>;
   }
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  return <>{children}</>;
+  return <Layout>{children}</Layout>;
 }
 
 function PublicRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center text-slate-500">Carregando...</div>
-    );
+    return <div className="flex h-screen items-center justify-center text-slate-500">Carregando...</div>;
   }
   if (user) {
     return <Navigate to="/" replace />;
@@ -55,6 +53,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pipes/:id"
+        element={
+          <ProtectedRoute>
+            <PipeBoardPage />
           </ProtectedRoute>
         }
       />
