@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  assignments  CardAssignee[]
+  comments     Comment[]
+}
+
+model Pipe {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String   @default("📋")
+  color     String   @default("#3b82f6")
+  createdAt DateTime @default(now())
+  phases    Phase[]
+  fields    Field[]
+  labels    Label[]
+}
+
+model Phase {
+  id         String   @id @default(cuid())
+  pipeId     String
+  pipe       Pipe     @relation(fields: [pipeId], references: [id], onDelete: Cascade)
+  name       String
+  position   Int
+  isDone     Boolean  @default(false)
+  isCanceled Boolean  @default(false)
+  cards      Card[]
+}
+
+model Field {
+  id       String       @id @default(cuid())
+  pipeId   String
+  pipe     Pipe         @relation(fields: [pipeId], references: [id], onDelete: Cascade)
+  label    String
+  type     String
+  required Boolean      @default(false)
+  options  String?
+  position Int
+  values   FieldValue[]
+}
+
+model Card {
+  id         String         @id @default(cuid())
+  phaseId    String
+  phase      Phase          @relation(fields: [phaseId], references: [id])
+  title      String
+  position   Int
+  dueDate    DateTime?
+  createdAt  DateTime       @default(now())
+  values     FieldValue[]
+  assignees  CardAssignee[]
+  labels     CardLabel[]
+  comments   Comment[]
+  activities Activity[]
+}
+
+model FieldValue {
+  id      String @id @default(cuid())
+  cardId  String
+  card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  fieldId String
+  field   Field  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  value   String
+
+  @@unique([cardId, fieldId])
+}
+
+model Label {
+  id     String      @id @default(cuid())
+  pipeId String
+  pipe   Pipe        @relation(fields: [pipeId], references: [id], onDelete: Cascade)
+  name   String
+  color  String
+  cards  CardLabel[]
+}
+
+model CardLabel {
+  cardId  String
+  labelId String
+  card    Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, labelId])
+}
+
+model CardAssignee {
+  cardId String
+  userId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  actorName String
+  type      String
+  detail    String
+  createdAt DateTime @default(now())
+}
