@@ -1,10 +1,23 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import App from "./App";
+import { AuthProvider } from "./auth/AuthContext";
 
 describe("App", () => {
-  it("renders the JoJoFy scaffold", () => {
-    render(<App />);
-    expect(screen.getByText("JoJoFy")).toBeInTheDocument();
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("redirects unauthenticated users to the login page", async () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("Entre na sua conta")).toBeInTheDocument();
   });
 });

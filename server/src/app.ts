@@ -1,14 +1,21 @@
 import Fastify, { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
+import authPlugin from "./plugins/auth.js";
 import { HttpError } from "./lib/http-error.js";
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/users.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
 
   await app.register(cors, { origin: true });
+  await app.register(authPlugin);
 
   app.get("/api/health", async () => ({ status: "ok" }));
+
+  await app.register(authRoutes, { prefix: "/api" });
+  await app.register(userRoutes, { prefix: "/api" });
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof HttpError) {
