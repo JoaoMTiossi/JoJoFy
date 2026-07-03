@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import PipeBoardPage from "./pages/PipeBoardPage";
+import PipeSettingsPage from "./pages/PipeSettingsPage";
 import { Layout } from "./components/ui/Layout";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -61,6 +62,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <PipeBoardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pipes/:id/settings"
+        element={
+          <ProtectedRoute>
+            <PipeSettingsPage />
           </ProtectedRoute>
         }
       />
