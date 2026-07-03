@@ -37,7 +37,7 @@ export function CardModal({
   pipe: Pipe;
   onClose: () => void;
 }) {
-  const { data: card, isLoading } = useCard(cardId);
+  const { data: card, isLoading, isError } = useCard(cardId);
   const { data: users } = useUsers();
   const updateCard = useUpdateCard(pipe.id);
   const moveCard = useMoveCard(pipe.id);
@@ -59,6 +59,14 @@ export function CardModal({
       setFieldValues(values);
     }
   }, [card]);
+
+  if (isError) {
+    return (
+      <Modal open onClose={onClose} width="max-w-3xl">
+        <p className="text-red-600">Não foi possível carregar este card.</p>
+      </Modal>
+    );
+  }
 
   if (isLoading || !card) {
     return (
