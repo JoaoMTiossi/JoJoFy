@@ -5,6 +5,10 @@ import authPlugin from "./plugins/auth.js";
 import { HttpError } from "./lib/http-error.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
+import pipeRoutes from "./routes/pipes.js";
+import phaseRoutes from "./routes/phases.js";
+import fieldRoutes from "./routes/fields.js";
+import labelRoutes from "./routes/labels.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
@@ -16,6 +20,10 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(authRoutes, { prefix: "/api" });
   await app.register(userRoutes, { prefix: "/api" });
+  await app.register(pipeRoutes, { prefix: "/api" });
+  await app.register(phaseRoutes, { prefix: "/api" });
+  await app.register(fieldRoutes, { prefix: "/api" });
+  await app.register(labelRoutes, { prefix: "/api" });
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof HttpError) {
