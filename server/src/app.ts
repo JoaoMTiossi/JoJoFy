@@ -16,6 +16,7 @@ import webhooksRoutes from "./routes/webhooks";
 import simulatorRoutes from "./routes/simulator";
 import publicMessagesRoutes from "./api/messages";
 import campaignsRoutes from "./routes/campaigns";
+import journeysRoutes from "./routes/journeys";
 import { initWebhookListener } from "./core/webhooks/dispatcher";
 import { AppError } from "./lib/errors";
 
@@ -47,6 +48,7 @@ export function build(opts: BuildOptions = {}): FastifyInstance {
   fastify.register(simulatorRoutes, { prefix: "/simulator" });
   fastify.register(publicMessagesRoutes, { prefix: "/v1" });
   fastify.register(campaignsRoutes, { prefix: "/campaigns" });
+  fastify.register(journeysRoutes, { prefix: "/journeys" });
 
   fastify.get("/health", async () => ({ ok: true }));
 

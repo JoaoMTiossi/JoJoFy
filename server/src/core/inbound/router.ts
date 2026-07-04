@@ -3,6 +3,7 @@ import { Errors } from "../../lib/errors";
 import { createOptOut } from "../contacts/optOutService";
 import { emitMessageEvent } from "../messaging/hooks";
 import { realtimeHub } from "../realtime/hub";
+import { markContactReplied } from "../journeys/runner";
 
 const OPT_OUT_KEYWORDS = ["sair", "parar", "stop", "cancelar", "unsubscribe"];
 
@@ -43,6 +44,7 @@ export async function handleInbound(input: InboundInput) {
 
   realtimeHub.broadcast(input.accountId, "message.received", { message });
   await emitMessageEvent("message.received", { message });
+  await markContactReplied(input.accountId, input.contactId);
 
   const normalized = input.text.trim().toLowerCase();
   if (OPT_OUT_KEYWORDS.includes(normalized)) {
