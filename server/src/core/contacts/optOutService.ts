@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { emitMessageEvent } from "../messaging/hooks";
 
 export async function isOptedOut(contactId: string, channelType: string): Promise<boolean> {
   const optOut = await prisma.optOut.findUnique({
@@ -8,9 +9,11 @@ export async function isOptedOut(contactId: string, channelType: string): Promis
 }
 
 export async function createOptOut(accountId: string, contactId: string, channelType: string, reason?: string) {
-  return prisma.optOut.upsert({
+  const optOut = await prisma.optOut.upsert({
     where: { contactId_channelType: { contactId, channelType } },
     update: { reason },
     create: { accountId, contactId, channelType, reason },
   });
+  await emitMessageEvent("contact.optout", { optOut });
+  return optOut;
 }

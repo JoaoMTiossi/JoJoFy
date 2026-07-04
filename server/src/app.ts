@@ -11,6 +11,11 @@ import listsRoutes from "./routes/lists";
 import segmentsRoutes from "./routes/segments";
 import channelsRoutes from "./routes/channels";
 import templatesRoutes from "./routes/templates";
+import apiKeysRoutes from "./routes/apikeys";
+import webhooksRoutes from "./routes/webhooks";
+import simulatorRoutes from "./routes/simulator";
+import publicMessagesRoutes from "./api/messages";
+import { initWebhookListener } from "./core/webhooks/dispatcher";
 import { AppError } from "./lib/errors";
 
 export interface BuildOptions {
@@ -19,6 +24,8 @@ export interface BuildOptions {
 
 export function build(opts: BuildOptions = {}): FastifyInstance {
   const fastify = Fastify({ logger: false });
+
+  initWebhookListener();
 
   fastify.register(cors, { origin: true });
   fastify.register(authPlugin);
@@ -34,6 +41,10 @@ export function build(opts: BuildOptions = {}): FastifyInstance {
   fastify.register(segmentsRoutes, { prefix: "/segments" });
   fastify.register(channelsRoutes, { prefix: "/channels" });
   fastify.register(templatesRoutes, { prefix: "/templates" });
+  fastify.register(apiKeysRoutes, { prefix: "/api-keys" });
+  fastify.register(webhooksRoutes, { prefix: "/webhooks" });
+  fastify.register(simulatorRoutes, { prefix: "/simulator" });
+  fastify.register(publicMessagesRoutes, { prefix: "/v1" });
 
   fastify.get("/health", async () => ({ ok: true }));
 

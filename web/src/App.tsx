@@ -6,6 +6,9 @@ import Contacts from "./pages/Contacts";
 import ContactDetail from "./pages/ContactDetail";
 import Audiences from "./pages/Audiences";
 import Templates from "./pages/Templates";
+import Simulator from "./pages/Simulator";
+import ApiKeys from "./pages/settings/ApiKeys";
+import ChannelsSettings from "./pages/settings/Channels";
 import AppLayout from "./components/AppLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Stub from "./components/Stub";
@@ -29,11 +32,11 @@ export default function App() {
           <Route path="/flows/:id" element={<Stub title="Chatbot" />} />
           <Route path="/inbox" element={<Stub title="Inbox" />} />
           <Route path="/supervision" element={<Stub title="Supervisão" />} />
-          <Route path="/settings/channels" element={<Stub title="Canais" />} />
-          <Route path="/settings/api-keys" element={<Stub title="API Keys" />} />
+          <Route path="/settings/channels" element={<ChannelsSettings />} />
+          <Route path="/settings/api-keys" element={<ApiKeys />} />
           <Route path="/settings/team" element={<Stub title="Equipe" />} />
           <Route path="/billing" element={<Stub title="Créditos" />} />
-          <Route path="/simulator" element={<Stub title="Simulador" />} />
+          <Route path="/simulator" element={<Simulator />} />
           <Route path="/reports" element={<Stub title="Relatórios" />} />
         </Route>
       </Route>
