@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.*
+!.env.example
+server/prisma/*.db
+server/prisma/*.db-journal
+server/prisma/migrations/
+.DS_Store
+web/dist/

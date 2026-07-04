@@ -1,0 +1,486 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite não suporta enums nativos no Prisma — papéis, status e tipos são
+// modelados como String, com os valores válidos documentados em comentário
+// e validados/tipados na camada de aplicação (server/src/lib/enums.ts).
+
+// ==================== Fundação ====================
+
+model Account {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users         User[]
+  apiKeys       ApiKey[]
+  contacts      Contact[]
+  attributeDefs AttributeDef[]
+  lists         List[]
+  segments      Segment[]
+  optOuts       OptOut[]
+  channels      Channel[]
+  templates     Template[]
+  messages      Message[]
+  webhooks      Webhook[]
+  campaigns     Campaign[]
+  journeys      Journey[]
+  flows         Flow[]
+  queues        Queue[]
+  conversations Conversation[]
+  channelPrices ChannelPrice[]
+  creditLedger  CreditLedger[]
+  jobs          Job[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id])
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String // ADMIN | MANAGER | AGENT | DEVELOPER
+  createdAt    DateTime @default(now())
+
+  agentStatus   AgentStatus?
+  conversations Conversation[]
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  accountId  String
+  account    Account   @relation(fields: [accountId], references: [id])
+  name       String
+  keyHash    String
+  keyPrefix  String
+  scopes     String // CSV: messages:send,messages:read
+  revoked    Boolean   @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+// ==================== Contatos ====================
+
+model Contact {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  name      String
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  attributeValues AttributeValue[]
+  listMembers     ListMember[]
+  optOuts         OptOut[]
+  messages        Message[]
+  conversations   Conversation[]
+  campaignRecips  CampaignRecipient[]
+  journeyRuns     JourneyRun[]
+  flowSessions    FlowSession[]
+
+  @@index([accountId])
+}
+
+model AttributeDef {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  name      String
+  type      String // TEXT | NUMBER | DATE | SELECT
+  options   String? // CSV of options for SELECT
+  createdAt DateTime @default(now())
+
+  values AttributeValue[]
+
+  @@unique([accountId, name])
+}
+
+model AttributeValue {
+  id        String       @id @default(cuid())
+  contactId String
+  contact   Contact      @relation(fields: [contactId], references: [id])
+  defId     String
+  def       AttributeDef @relation(fields: [defId], references: [id])
+  value     String
+
+  @@unique([contactId, defId])
+}
+
+model List {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  name      String
+  createdAt DateTime @default(now())
+
+  members   ListMember[]
+  campaigns Campaign[]
+}
+
+model ListMember {
+  id        String   @id @default(cuid())
+  listId    String
+  list      List     @relation(fields: [listId], references: [id])
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([listId, contactId])
+}
+
+model Segment {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  name      String
+  filter    String // JSON: { logic: "AND", conditions: [{attr, op, value}] }
+  createdAt DateTime @default(now())
+
+  campaigns Campaign[]
+}
+
+model OptOut {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id])
+  contactId   String
+  contact     Contact  @relation(fields: [contactId], references: [id])
+  channelType String // WHATSAPP | EMAIL
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  @@unique([contactId, channelType])
+}
+
+// ==================== Mensageria ====================
+
+model Channel {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  type      String // WHATSAPP | EMAIL
+  name      String
+  config    String // JSON
+  createdAt DateTime @default(now())
+
+  templates Template[]
+  messages  Message[]
+  campaigns Campaign[]
+  flows     Flow[]
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id])
+  channelId   String
+  channel     Channel  @relation(fields: [channelId], references: [id])
+  channelType String // WHATSAPP | EMAIL
+  name        String
+  body        String
+  buttons     String? // JSON array for WhatsApp
+  subject     String? // e-mail
+  html        String? // e-mail
+  status      String   @default("APPROVED") // DRAFT | APPROVED | REJECTED
+  createdAt   DateTime @default(now())
+
+  campaigns        Campaign[] @relation("PrimaryTemplate")
+  variantCampaigns Campaign[] @relation("VariantBTemplate")
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  accountId      String
+  account        Account       @relation(fields: [accountId], references: [id])
+  direction      String // IN | OUT
+  channelId      String
+  channel        Channel       @relation(fields: [channelId], references: [id])
+  channelType    String // WHATSAPP | EMAIL
+  contactId      String
+  contact        Contact       @relation(fields: [contactId], references: [id])
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  campaignId     String?
+  campaign       Campaign?     @relation(fields: [campaignId], references: [id])
+  source         String // API | CAMPAIGN | BOT | AGENT | JOURNEY | SIMULATOR
+  body           String // JSON: { text, templateId?, vars?, buttons? }
+  status         String        @default("QUEUED") // QUEUED|SENT|DELIVERED|READ|FAILED
+  statusAt       DateTime      @default(now())
+  costCredits    Float         @default(0)
+  providerId     String?
+  idempotencyKey String?
+  createdAt      DateTime      @default(now())
+
+  campaignRecipient CampaignRecipient?
+
+  @@index([accountId, contactId])
+  @@index([conversationId])
+  @@index([accountId, idempotencyKey])
+}
+
+model Webhook {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  url       String
+  secret    String
+  events    String // CSV: message.status,message.received,contact.optout
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  deliveries WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id          String    @id @default(cuid())
+  webhookId   String
+  webhook     Webhook   @relation(fields: [webhookId], references: [id])
+  event       String
+  payload     String
+  attempts    Int       @default(0)
+  status      String    @default("PENDING") // PENDING|DELIVERED|FAILED
+  nextRetryAt DateTime?
+  lastStatus  Int?
+  lastError   String?
+  createdAt   DateTime  @default(now())
+}
+
+// ==================== Campanhas e jornadas ====================
+
+model Campaign {
+  id             String    @id @default(cuid())
+  accountId      String
+  account        Account   @relation(fields: [accountId], references: [id])
+  name           String
+  channelId      String
+  channel        Channel   @relation(fields: [channelId], references: [id])
+  channelType    String // WHATSAPP | EMAIL
+  listId         String?
+  list           List?     @relation(fields: [listId], references: [id])
+  segmentId      String?
+  segment        Segment?  @relation(fields: [segmentId], references: [id])
+  templateId     String
+  template       Template  @relation("PrimaryTemplate", fields: [templateId], references: [id])
+  variables      String? // JSON default vars
+  variantBId     String?
+  variantB       Template? @relation("VariantBTemplate", fields: [variantBId], references: [id])
+  variantPct     Int?
+  scheduleAt     DateTime?
+  status         String    @default("DRAFT") // DRAFT|SCHEDULED|RUNNING|DONE|CANCELED
+  totalCount     Int       @default(0)
+  sentCount      Int       @default(0)
+  deliveredCount Int       @default(0)
+  readCount      Int       @default(0)
+  failedCount    Int       @default(0)
+  createdAt      DateTime  @default(now())
+
+  recipients CampaignRecipient[]
+  messages   Message[]
+}
+
+model CampaignRecipient {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  contactId  String
+  contact    Contact  @relation(fields: [contactId], references: [id])
+  variant    String   @default("A") // A|B
+  messageId  String?  @unique
+  message    Message? @relation(fields: [messageId], references: [id])
+  status     String   @default("PENDING") // PENDING|SENT|SKIPPED
+  createdAt  DateTime @default(now())
+
+  @@unique([campaignId, contactId])
+}
+
+model Journey {
+  id         String   @id @default(cuid())
+  accountId  String
+  account    Account  @relation(fields: [accountId], references: [id])
+  name       String
+  definition String // JSON: steps [{type: send|wait|condition, ...}]
+  status     String   @default("DRAFT") // DRAFT|ACTIVE|PAUSED
+  listId     String?
+  segmentId  String?
+  createdAt  DateTime @default(now())
+
+  runs JourneyRun[]
+}
+
+model JourneyRun {
+  id        String    @id @default(cuid())
+  journeyId String
+  journey   Journey   @relation(fields: [journeyId], references: [id])
+  contactId String
+  contact   Contact   @relation(fields: [contactId], references: [id])
+  stepIndex Int       @default(0)
+  state     String? // JSON scratch state
+  status    String    @default("RUNNING") // RUNNING|DONE|FAILED
+  replied   Boolean   @default(false)
+  nextRunAt DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// ==================== Chatbot ====================
+
+model Flow {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  channelId String
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  name      String
+  keywords  String? // CSV
+  draft     String // JSON graph
+  published String? // JSON graph
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  sessions FlowSession[]
+}
+
+model FlowSession {
+  id            String   @id @default(cuid())
+  flowId        String
+  flow          Flow     @relation(fields: [flowId], references: [id])
+  contactId     String
+  contact       Contact  @relation(fields: [contactId], references: [id])
+  currentNodeId String?
+  variables     String   @default("{}") // JSON
+  status        String   @default("ACTIVE") // ACTIVE|DONE|TRANSFERRED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== Atendimento ====================
+
+model Queue {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id])
+  name        String
+  strategy    String   @default("ROUND_ROBIN") // ROUND_ROBIN | LEAST_BUSY
+  maxPerAgent Int      @default(5)
+  createdAt   DateTime @default(now())
+
+  conversations Conversation[]
+  members       QueueMember[]
+}
+
+model QueueMember {
+  id      String @id @default(cuid())
+  queueId String
+  queue   Queue  @relation(fields: [queueId], references: [id])
+  userId  String
+
+  @@unique([queueId, userId])
+}
+
+model Conversation {
+  id                  String    @id @default(cuid())
+  accountId           String
+  account             Account   @relation(fields: [accountId], references: [id])
+  contactId           String
+  contact             Contact   @relation(fields: [contactId], references: [id])
+  channelType         String // WHATSAPP | EMAIL
+  queueId             String?
+  queue               Queue?    @relation(fields: [queueId], references: [id])
+  agentId             String?
+  agent               User?     @relation(fields: [agentId], references: [id])
+  status              String    @default("OPEN") // OPEN|ASSIGNED|RESOLVED
+  firstResponseAt     DateTime?
+  resolvedAt          DateTime?
+  slaFirstResponseMin Int       @default(15)
+  reopenedCount       Int       @default(0)
+  resolveReason       String?
+  createdAt           DateTime  @default(now())
+
+  messages Message[]
+  notes    InternalNote[]
+  tags     ConversationTag[]
+}
+
+model QuickReply {
+  id        String   @id @default(cuid())
+  accountId String
+  shortcut  String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@unique([accountId, shortcut])
+}
+
+model InternalNote {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  authorId       String
+  body           String
+  createdAt      DateTime     @default(now())
+}
+
+model ConversationTag {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  tag            String
+  createdAt      DateTime     @default(now())
+}
+
+model AgentStatus {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  status      String   @default("OFFLINE") // ONLINE|AWAY|OFFLINE
+  activeCount Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+// ==================== Billing ====================
+
+model ChannelPrice {
+  id          String  @id @default(cuid())
+  accountId   String
+  account     Account @relation(fields: [accountId], references: [id])
+  channelType String // WHATSAPP | EMAIL
+  credits     Float
+
+  @@unique([accountId, channelType])
+}
+
+model CreditLedger {
+  id           String   @id @default(cuid())
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id])
+  delta        Float
+  balanceAfter Float
+  reason       String
+  refType      String?
+  refId        String?
+  createdAt    DateTime @default(now())
+
+  @@index([accountId])
+}
+
+// ==================== Infra ====================
+
+model Job {
+  id        String   @id @default(cuid())
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id])
+  type      String
+  payload   String // JSON
+  runAt     DateTime
+  status    String   @default("PENDING") // PENDING|RUNNING|DONE|FAILED
+  attempts  Int      @default(0)
+  lastError String?
+  createdAt DateTime @default(now())
+}
