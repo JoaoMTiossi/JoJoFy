@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/Dashboard";
+import Contacts from "./pages/Contacts";
+import ContactDetail from "./pages/ContactDetail";
+import Audiences from "./pages/Audiences";
 import AppLayout from "./components/AppLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Stub from "./components/Stub";
@@ -15,9 +18,9 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/contacts" element={<Stub title="Contatos" />} />
-          <Route path="/contacts/:id" element={<Stub title="Perfil do contato" />} />
-          <Route path="/audiences" element={<Stub title="Audiências" />} />
+          <Route path="/contacts" element={<Contacts />} />
+          <Route path="/contacts/:id" element={<ContactDetail />} />
+          <Route path="/audiences" element={<Audiences />} />
           <Route path="/templates" element={<Stub title="Templates" />} />
           <Route path="/campaigns" element={<Stub title="Campanhas" />} />
           <Route path="/campaigns/:id" element={<Stub title="Relatório da campanha" />} />

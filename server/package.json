@@ -18,6 +18,7 @@
     "@fastify/websocket": "^10.0.1",
     "@prisma/client": "^5.19.1",
     "bcryptjs": "^2.4.3",
+    "csv-parse": "^5.5.6",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
     "fastify-plugin": "^4.5.1",

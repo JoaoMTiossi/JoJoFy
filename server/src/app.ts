@@ -6,6 +6,9 @@ import apiKeyAuthPlugin from "./plugins/apiKeyAuth";
 import websocketPlugin from "./plugins/websocket";
 import authRoutes from "./routes/auth";
 import reportsRoutes from "./routes/reports";
+import contactsRoutes from "./routes/contacts";
+import listsRoutes from "./routes/lists";
+import segmentsRoutes from "./routes/segments";
 import { AppError } from "./lib/errors";
 
 export interface BuildOptions {
@@ -24,6 +27,9 @@ export function build(opts: BuildOptions = {}): FastifyInstance {
 
   fastify.register(authRoutes, { prefix: "/auth" });
   fastify.register(reportsRoutes, { prefix: "/reports" });
+  fastify.register(contactsRoutes, { prefix: "/contacts" });
+  fastify.register(listsRoutes, { prefix: "/lists" });
+  fastify.register(segmentsRoutes, { prefix: "/segments" });
 
   fastify.get("/health", async () => ({ ok: true }));
 
