@@ -15,6 +15,8 @@ import Flows from "./pages/Flows";
 import FlowCanvas from "./pages/FlowCanvas";
 import Inbox from "./pages/Inbox";
 import Supervision from "./pages/Supervision";
+import Reports from "./pages/Reports";
+import Billing from "./pages/Billing";
 import ApiKeys from "./pages/settings/ApiKeys";
 import ChannelsSettings from "./pages/settings/Channels";
 import AppLayout from "./components/AppLayout";
@@ -45,9 +47,9 @@ export default function App() {
           <Route path="/settings/channels" element={<ChannelsSettings />} />
           <Route path="/settings/api-keys" element={<ApiKeys />} />
           <Route path="/settings/team" element={<Stub title="Equipe" />} />
-          <Route path="/billing" element={<Stub title="Créditos" />} />
+          <Route path="/billing" element={<Billing />} />
           <Route path="/simulator" element={<Simulator />} />
-          <Route path="/reports" element={<Stub title="Relatórios" />} />
+          <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>
 
