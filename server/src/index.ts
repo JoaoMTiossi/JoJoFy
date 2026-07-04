@@ -1,6 +1,6 @@
 import { build } from "./app";
 import { prisma } from "./lib/prisma";
-import { JobRunner } from "./core/jobs/JobRunner";
+import { jobRunner } from "./core/jobs/instance";
 import { registerJobHandlers } from "./core/jobs/registerHandlers";
 
 const PORT = Number(process.env.PORT) || 3333;
@@ -8,7 +8,6 @@ const PORT = Number(process.env.PORT) || 3333;
 async function main() {
   const fastify = build();
 
-  const jobRunner = new JobRunner(prisma);
   registerJobHandlers(jobRunner);
   jobRunner.start(1000);
 

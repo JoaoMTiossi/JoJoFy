@@ -9,6 +9,8 @@ import reportsRoutes from "./routes/reports";
 import contactsRoutes from "./routes/contacts";
 import listsRoutes from "./routes/lists";
 import segmentsRoutes from "./routes/segments";
+import channelsRoutes from "./routes/channels";
+import templatesRoutes from "./routes/templates";
 import { AppError } from "./lib/errors";
 
 export interface BuildOptions {
@@ -30,6 +32,8 @@ export function build(opts: BuildOptions = {}): FastifyInstance {
   fastify.register(contactsRoutes, { prefix: "/contacts" });
   fastify.register(listsRoutes, { prefix: "/lists" });
   fastify.register(segmentsRoutes, { prefix: "/segments" });
+  fastify.register(channelsRoutes, { prefix: "/channels" });
+  fastify.register(templatesRoutes, { prefix: "/templates" });
 
   fastify.get("/health", async () => ({ ok: true }));
 

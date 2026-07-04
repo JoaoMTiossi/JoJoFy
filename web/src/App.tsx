@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Contacts from "./pages/Contacts";
 import ContactDetail from "./pages/ContactDetail";
 import Audiences from "./pages/Audiences";
+import Templates from "./pages/Templates";
 import AppLayout from "./components/AppLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Stub from "./components/Stub";
@@ -21,7 +22,7 @@ export default function App() {
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/contacts/:id" element={<ContactDetail />} />
           <Route path="/audiences" element={<Audiences />} />
-          <Route path="/templates" element={<Stub title="Templates" />} />
+          <Route path="/templates" element={<Templates />} />
           <Route path="/campaigns" element={<Stub title="Campanhas" />} />
           <Route path="/campaigns/:id" element={<Stub title="Relatório da campanha" />} />
           <Route path="/journeys/:id" element={<Stub title="Jornada" />} />
