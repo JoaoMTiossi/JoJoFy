@@ -7,6 +7,8 @@ import ContactDetail from "./pages/ContactDetail";
 import Audiences from "./pages/Audiences";
 import Templates from "./pages/Templates";
 import Simulator from "./pages/Simulator";
+import Campaigns from "./pages/Campaigns";
+import CampaignDetail from "./pages/CampaignDetail";
 import ApiKeys from "./pages/settings/ApiKeys";
 import ChannelsSettings from "./pages/settings/Channels";
 import AppLayout from "./components/AppLayout";
@@ -26,8 +28,8 @@ export default function App() {
           <Route path="/contacts/:id" element={<ContactDetail />} />
           <Route path="/audiences" element={<Audiences />} />
           <Route path="/templates" element={<Templates />} />
-          <Route path="/campaigns" element={<Stub title="Campanhas" />} />
-          <Route path="/campaigns/:id" element={<Stub title="Relatório da campanha" />} />
+          <Route path="/campaigns" element={<Campaigns />} />
+          <Route path="/campaigns/:id" element={<CampaignDetail />} />
           <Route path="/journeys/:id" element={<Stub title="Jornada" />} />
           <Route path="/flows/:id" element={<Stub title="Chatbot" />} />
           <Route path="/inbox" element={<Stub title="Inbox" />} />
