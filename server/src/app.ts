@@ -18,6 +18,11 @@ import publicMessagesRoutes from "./api/messages";
 import campaignsRoutes from "./routes/campaigns";
 import journeysRoutes from "./routes/journeys";
 import flowsRoutes from "./routes/flows";
+import queuesRoutes from "./routes/queues";
+import conversationsRoutes from "./routes/conversations";
+import quickRepliesRoutes from "./routes/quickreplies";
+import agentStatusRoutes from "./routes/agentStatus";
+import supervisionRoutes from "./routes/supervision";
 import { initWebhookListener } from "./core/webhooks/dispatcher";
 import { AppError } from "./lib/errors";
 
@@ -51,6 +56,11 @@ export function build(opts: BuildOptions = {}): FastifyInstance {
   fastify.register(campaignsRoutes, { prefix: "/campaigns" });
   fastify.register(journeysRoutes, { prefix: "/journeys" });
   fastify.register(flowsRoutes, { prefix: "/flows" });
+  fastify.register(queuesRoutes, { prefix: "/queues" });
+  fastify.register(conversationsRoutes, { prefix: "/conversations" });
+  fastify.register(quickRepliesRoutes, { prefix: "/quick-replies" });
+  fastify.register(agentStatusRoutes, { prefix: "/agent-status" });
+  fastify.register(supervisionRoutes, { prefix: "/supervision" });
 
   fastify.get("/health", async () => ({ ok: true }));
 

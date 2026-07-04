@@ -13,6 +13,8 @@ import Journeys from "./pages/Journeys";
 import JourneyDetail from "./pages/JourneyDetail";
 import Flows from "./pages/Flows";
 import FlowCanvas from "./pages/FlowCanvas";
+import Inbox from "./pages/Inbox";
+import Supervision from "./pages/Supervision";
 import ApiKeys from "./pages/settings/ApiKeys";
 import ChannelsSettings from "./pages/settings/Channels";
 import AppLayout from "./components/AppLayout";
@@ -38,8 +40,8 @@ export default function App() {
           <Route path="/journeys/:id" element={<JourneyDetail />} />
           <Route path="/flows" element={<Flows />} />
           <Route path="/flows/:id" element={<FlowCanvas />} />
-          <Route path="/inbox" element={<Stub title="Inbox" />} />
-          <Route path="/supervision" element={<Stub title="Supervisão" />} />
+          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/supervision" element={<Supervision />} />
           <Route path="/settings/channels" element={<ChannelsSettings />} />
           <Route path="/settings/api-keys" element={<ApiKeys />} />
           <Route path="/settings/team" element={<Stub title="Equipe" />} />

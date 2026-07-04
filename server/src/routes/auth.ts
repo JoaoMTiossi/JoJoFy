@@ -68,7 +68,12 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
       await creditAccount(tx, account.id, COURTESY_CREDITS, "Créditos de boas-vindas");
 
-      return { account, user, channels: [whatsapp, email] };
+      const defaultQueue = await tx.queue.create({
+        data: { accountId: account.id, name: "Geral", strategy: "ROUND_ROBIN", maxPerAgent: 5 },
+      });
+      await tx.queueMember.create({ data: { queueId: defaultQueue.id, userId: user.id } });
+
+      return { account, user, channels: [whatsapp, email], defaultQueue };
     });
 
     const token = fastify.jwt.sign({

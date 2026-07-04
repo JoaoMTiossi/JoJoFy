@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth, Role } from "../auth/AuthContext";
+import { useRealtime } from "../realtime/useRealtime";
 
 interface NavItem {
   to: string;
@@ -27,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function AppLayout() {
   const { user, account, logout } = useAuth();
+  useRealtime();
 
   const visibleItems = NAV_ITEMS.filter((item) => !item.roles || (user && item.roles.includes(user.role)));
 
