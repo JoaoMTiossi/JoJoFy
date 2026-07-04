@@ -15,8 +15,8 @@ async function downloadCsv(type: "campaigns" | "messages" | "contacts") {
 }
 
 export default function Reports() {
-  const [tab, setTab] = useState<"dashboard" | "bot" | "attendance">("dashboard");
-  const { data: dashboard } = useQuery({ queryKey: ["reportsDashboard"], queryFn: reportsApi.dashboard });
+  const [tab, setTab] = useState<"campaigns" | "bot" | "attendance">("campaigns");
+  const { data: campaigns } = useQuery({ queryKey: ["reportsCampaigns"], queryFn: reportsApi.campaigns, enabled: tab === "campaigns" });
   const { data: bot } = useQuery({ queryKey: ["reportsBot"], queryFn: reportsApi.bot, enabled: tab === "bot" });
   const { data: attendance } = useQuery({ queryKey: ["reportsAttendance"], queryFn: reportsApi.attendance, enabled: tab === "attendance" });
 
@@ -38,35 +38,48 @@ export default function Reports() {
       </div>
 
       <div className="mt-4 flex gap-2 border-b border-slate-200">
-        {(["dashboard", "bot", "attendance"] as const).map((t) => (
+        {(["campaigns", "bot", "attendance"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-3 py-2 text-sm font-medium ${tab === t ? "border-b-2 border-brand-600 text-brand-700" : "text-slate-500"}`}
           >
-            {t === "dashboard" ? "Geral" : t === "bot" ? "Bot" : "Atendimento"}
+            {t === "campaigns" ? "Campanhas" : t === "bot" ? "Bot" : "Atendimento"}
           </button>
         ))}
       </div>
 
-      {tab === "dashboard" && dashboard && (
-        <div className="mt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Stat label="Saldo de créditos" value={dashboard.balance.toFixed(1)} highlight={dashboard.lowBalance} />
-            <Stat label="Conversas abertas" value={dashboard.openConversations} />
-            <Stat label="Taxa de entrega" value={`${(dashboard.deliveryRate * 100).toFixed(0)}%`} />
-            <Stat label="Taxa de leitura" value={`${(dashboard.readRate * 100).toFixed(0)}%`} />
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700">Mensagens por canal (14 dias)</h2>
-            <div className="mt-2 flex gap-4">
-              {Object.entries(dashboard.messagesByChannel).map(([channel, count]) => (
-                <div key={channel} className="text-sm">
-                  <span className="font-semibold">{channel}:</span> {count}
-                </div>
+      {tab === "campaigns" && (
+        <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-2">Nome</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Total</th>
+                <th className="px-4 py-2">Enviadas</th>
+                <th className="px-4 py-2">Falhas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {campaigns?.map((c: any) => (
+                <tr key={c.id} className="border-t border-slate-100">
+                  <td className="px-4 py-2">{c.name}</td>
+                  <td className="px-4 py-2">{c.status}</td>
+                  <td className="px-4 py-2">{c.totalCount}</td>
+                  <td className="px-4 py-2">{c.sentCount}</td>
+                  <td className="px-4 py-2">{c.failedCount}</td>
+                </tr>
               ))}
-            </div>
-          </div>
+              {campaigns?.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                    Nenhuma campanha ainda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -91,10 +104,10 @@ export default function Reports() {
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string | number; highlight?: boolean }) {
+function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <div className={`text-2xl font-semibold ${highlight ? "text-red-600" : "text-slate-800"}`}>{value}</div>
+      <div className="text-2xl font-semibold text-slate-800">{value}</div>
       <div className="text-xs text-slate-500">{label}</div>
     </div>
   );

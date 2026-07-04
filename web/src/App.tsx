@@ -31,25 +31,34 @@ export default function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Dashboard />} />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/contacts/:id" element={<ContactDetail />} />
-          <Route path="/audiences" element={<Audiences />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/campaigns" element={<Campaigns />} />
-          <Route path="/campaigns/:id" element={<CampaignDetail />} />
-          <Route path="/journeys" element={<Journeys />} />
-          <Route path="/journeys/:id" element={<JourneyDetail />} />
-          <Route path="/flows" element={<Flows />} />
-          <Route path="/flows/:id" element={<FlowCanvas />} />
           <Route path="/inbox" element={<Inbox />} />
-          <Route path="/supervision" element={<Supervision />} />
-          <Route path="/settings/channels" element={<ChannelsSettings />} />
-          <Route path="/settings/api-keys" element={<ApiKeys />} />
-          <Route path="/settings/team" element={<Stub title="Equipe" />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/simulator" element={<Simulator />} />
-          <Route path="/reports" element={<Reports />} />
+
+          <Route element={<ProtectedRoute roles={["ADMIN", "MANAGER"]} />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/audiences" element={<Audiences />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/campaigns/:id" element={<CampaignDetail />} />
+            <Route path="/journeys" element={<Journeys />} />
+            <Route path="/journeys/:id" element={<JourneyDetail />} />
+            <Route path="/flows" element={<Flows />} />
+            <Route path="/flows/:id" element={<FlowCanvas />} />
+            <Route path="/supervision" element={<Supervision />} />
+            <Route path="/reports" element={<Reports />} />
+          </Route>
+
+          <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/simulator" element={<Simulator />} />
+            <Route path="/settings/channels" element={<ChannelsSettings />} />
+            <Route path="/settings/team" element={<Stub title="Equipe" />} />
+          </Route>
+
+          <Route element={<ProtectedRoute roles={["ADMIN", "DEVELOPER"]} />}>
+            <Route path="/settings/api-keys" element={<ApiKeys />} />
+          </Route>
         </Route>
       </Route>
 

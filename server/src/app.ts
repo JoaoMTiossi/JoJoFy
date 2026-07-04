@@ -24,6 +24,7 @@ import quickRepliesRoutes from "./routes/quickreplies";
 import agentStatusRoutes from "./routes/agentStatus";
 import supervisionRoutes from "./routes/supervision";
 import billingRoutes from "./routes/billing";
+import echoRoutes from "./routes/echo";
 import { initWebhookListener } from "./core/webhooks/dispatcher";
 import { AppError } from "./lib/errors";
 
@@ -63,6 +64,7 @@ export function build(opts: BuildOptions = {}): FastifyInstance {
   fastify.register(agentStatusRoutes, { prefix: "/agent-status" });
   fastify.register(supervisionRoutes, { prefix: "/supervision" });
   fastify.register(billingRoutes, { prefix: "/billing" });
+  fastify.register(echoRoutes, { prefix: "/echo" });
 
   fastify.get("/health", async () => ({ ok: true }));
 

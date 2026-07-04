@@ -91,7 +91,7 @@ export default function FlowCanvas() {
     const node: Node<FlowNodeCardData> = {
       id,
       type: "flowNode",
-      position: { x: 100 + nodes.length * 30, y: 100 + nodes.length * 40 },
+      position: { x: 80 + (nodes.length % 3) * 300, y: 80 + Math.floor(nodes.length / 3) * 220 },
       data: { nodeType: type, nodeData: { ...DEFAULT_DATA[type] } },
     };
     setNodes((nds) => [...nds, node]);
