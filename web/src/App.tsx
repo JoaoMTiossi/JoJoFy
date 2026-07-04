@@ -11,6 +11,8 @@ import Campaigns from "./pages/Campaigns";
 import CampaignDetail from "./pages/CampaignDetail";
 import Journeys from "./pages/Journeys";
 import JourneyDetail from "./pages/JourneyDetail";
+import Flows from "./pages/Flows";
+import FlowCanvas from "./pages/FlowCanvas";
 import ApiKeys from "./pages/settings/ApiKeys";
 import ChannelsSettings from "./pages/settings/Channels";
 import AppLayout from "./components/AppLayout";
@@ -34,7 +36,8 @@ export default function App() {
           <Route path="/campaigns/:id" element={<CampaignDetail />} />
           <Route path="/journeys" element={<Journeys />} />
           <Route path="/journeys/:id" element={<JourneyDetail />} />
-          <Route path="/flows/:id" element={<Stub title="Chatbot" />} />
+          <Route path="/flows" element={<Flows />} />
+          <Route path="/flows/:id" element={<FlowCanvas />} />
           <Route path="/inbox" element={<Stub title="Inbox" />} />
           <Route path="/supervision" element={<Stub title="Supervisão" />} />
           <Route path="/settings/channels" element={<ChannelsSettings />} />
