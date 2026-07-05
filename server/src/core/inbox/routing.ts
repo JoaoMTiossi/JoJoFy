@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { Errors } from "../../lib/errors";
 import { realtimeHub } from "../realtime/hub";
+import { claimContactOwnership } from "../contacts/visibility";
 
 /** Escolhe o próximo agente elegível de uma fila, respeitando `maxPerAgent`
  * e status ONLINE, segundo a estratégia (round-robin ou menor carga). */
@@ -46,6 +47,7 @@ export async function autoAssignConversation(conversationId: string) {
     prisma.conversation.update({ where: { id: conversationId }, data: { agentId, status: "ASSIGNED" } }),
     prisma.agentStatus.update({ where: { userId: agentId }, data: { activeCount: { increment: 1 } } }),
   ]);
+  await claimContactOwnership(conversation.contactId, agentId);
   realtimeHub.broadcast(conversation.accountId, "conversation.updated", { conversationId });
 }
 
@@ -68,6 +70,7 @@ export async function pullConversation(conversationId: string, userId: string) {
     prisma.conversation.update({ where: { id: conversationId }, data: { agentId: userId, status: "ASSIGNED" } }),
     prisma.agentStatus.update({ where: { userId }, data: { activeCount: { increment: 1 } } }),
   ]);
+  await claimContactOwnership(conversation.contactId, userId);
   realtimeHub.broadcast(conversation.accountId, "conversation.updated", { conversationId });
   return updated;
 }
@@ -102,6 +105,7 @@ export async function transferConversation(
       data: { queueId: input.queueId ?? conversation.queueId, agentId: input.agentId, status: "ASSIGNED" },
     });
     await prisma.agentStatus.update({ where: { userId: input.agentId }, data: { activeCount: status.activeCount + 1 } });
+    await claimContactOwnership(conversation.contactId, input.agentId);
   } else {
     await prisma.conversation.update({
       where: { id: conversationId },

@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { Errors } from "../lib/errors";
 import { sendMessage } from "../core/messaging/messageService";
 import { pullConversation, transferConversation, resolveConversation } from "../core/inbox/routing";
+import { claimContactOwnership } from "../core/contacts/visibility";
 import { realtimeHub } from "../core/realtime/hub";
 
 function withSla<T extends { firstResponseAt: Date | null; status: string; createdAt: Date; slaFirstResponseMin: number }>(
@@ -27,6 +28,26 @@ export default async function conversationsRoutes(fastify: FastifyInstance) {
     if (q.queueId) where.queueId = q.queueId;
     if (q.mine === "true") where.agentId = request.user.sub;
     if (q.unassigned === "true") where.agentId = null;
+
+    // AGENT: visibilidade imposta no backend — só conversas atribuídas a ele
+    // OU não atribuídas nas filas em que ele é membro (o filtro "mine" deixa
+    // de ser opcional na prática para agentes).
+    if (request.user.role === "AGENT") {
+      const memberships = await prisma.queueMember.findMany({
+        where: { userId: request.user.sub },
+        select: { queueId: true },
+      });
+      const queueIds = memberships.map((m) => m.queueId);
+      where.AND = [
+        ...(where.AND ?? []),
+        {
+          OR: [
+            { agentId: request.user.sub },
+            ...(queueIds.length > 0 ? [{ agentId: null, queueId: { in: queueIds } }] : []),
+          ],
+        },
+      ];
+    }
 
     const conversations = await prisma.conversation.findMany({
       where,
@@ -67,6 +88,7 @@ export default async function conversationsRoutes(fastify: FastifyInstance) {
         where: { id },
         data: { agentId: request.user.sub, status: "ASSIGNED" },
       });
+      await claimContactOwnership(conversation.contactId, request.user.sub);
     }
 
     const channel = await prisma.channel.findFirst({ where: { accountId, type: conversation.channelType } });

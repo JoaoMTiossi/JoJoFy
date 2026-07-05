@@ -183,10 +183,11 @@ function SegmentsPanel() {
 }
 
 function ImportPanel() {
-  const [csv, setCsv] = useState("nome,telefone,email\n");
+  const [csv, setCsv] = useState("nome,telefone,email,owner_email\n");
   const [nameCol, setNameCol] = useState("nome");
   const [phoneCol, setPhoneCol] = useState("telefone");
   const [emailCol, setEmailCol] = useState("email");
+  const [ownerEmailCol, setOwnerEmailCol] = useState("owner_email");
   const [report, setReport] = useState<any>(null);
 
   const importMutation = useMutation({
@@ -205,10 +206,19 @@ function ImportPanel() {
         <input className="rounded-md border border-slate-300 px-2 py-1 text-sm" value={nameCol} onChange={(e) => setNameCol(e.target.value)} placeholder="coluna do nome" />
         <input className="rounded-md border border-slate-300 px-2 py-1 text-sm" value={phoneCol} onChange={(e) => setPhoneCol(e.target.value)} placeholder="coluna do telefone" />
         <input className="rounded-md border border-slate-300 px-2 py-1 text-sm" value={emailCol} onChange={(e) => setEmailCol(e.target.value)} placeholder="coluna do e-mail" />
+        <input className="rounded-md border border-slate-300 px-2 py-1 text-sm" value={ownerEmailCol} onChange={(e) => setOwnerEmailCol(e.target.value)} placeholder="coluna owner_email (dono)" />
       </div>
       <button
         onClick={() =>
-          importMutation.mutate({ csv, mapping: { name: nameCol, phone: phoneCol || undefined, email: emailCol || undefined } })
+          importMutation.mutate({
+            csv,
+            mapping: {
+              name: nameCol,
+              phone: phoneCol || undefined,
+              email: emailCol || undefined,
+              ownerEmail: ownerEmailCol || undefined,
+            },
+          })
         }
         className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
       >

@@ -129,6 +129,36 @@ inbox/contatos) e `DEVELOPER` (API keys/webhooks). O registro de uma conta
 nova já cria o usuário `ADMIN`, os canais WhatsApp/e-mail simulados, os
 preços por canal e 1.000 créditos de cortesia.
 
+### Carteira de contatos e visibilidade por papel
+
+Especificação completa em [`docs/ESPEC_VISIBILIDADE_CONTATOS.md`](docs/ESPEC_VISIBILIDADE_CONTATOS.md).
+
+| Papel | Contatos | Conversas |
+|---|---|---|
+| ADMIN, MANAGER, DEVELOPER | Todos da conta | Todas da conta |
+| AGENT | Somente os visíveis (regra abaixo) | Atribuídas a ele + não atribuídas nas filas em que é membro |
+
+Cada contato pode ter um **dono** (`Contact.ownerId`, opcional). Um AGENT
+enxerga um contato se qualquer condição vale: (1) é o dono; (2) o contato tem
+conversa atribuída a ele; (3) o contato tem conversa não atribuída numa fila
+da qual ele é membro. A regra é imposta no backend pelo helper único
+`contactVisibilityWhere(user)` (`server/src/core/contacts/visibility.ts`),
+usado em todas as rotas que expõem contatos — um contato fora da visão do
+agente retorna **404** (nunca 403, para não vazar a existência).
+
+- **Carteirização automática**: quando um AGENT assume (pull ou atribuição,
+  inclusive automática) uma conversa de contato **sem dono**, o contato passa
+  para a carteira dele; contato que já tem dono não muda de dono.
+- **Atribuição de dono**: só ADMIN/MANAGER — `PATCH /contacts/:id` com
+  `ownerId`, `POST /contacts/bulk-owner` (seleção múltipla na lista de
+  contatos) e a coluna opcional `owner_email` na importação CSV (e-mail de
+  usuário inexistente vira erro de linha; as demais linhas importam).
+- Contato criado por um AGENT nasce na carteira dele. A API pública (API key)
+  não muda: o escopo é da conta (server-to-server). Campanhas, segmentos e
+  jornadas continuam recursos de MANAGER+ e veem todos os contatos.
+- No seed de demonstração, 15 contatos pertencem ao agente Bruno, 15 à agente
+  Carla e 20 ficam sem dono — entre como agente para ver a lista filtrada.
+
 ### Decisões e limitações conhecidas
 
 - SQLite não tem enum nativo no Prisma: os campos que seriam enum (papéis,

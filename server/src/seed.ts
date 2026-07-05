@@ -75,12 +75,16 @@ async function main() {
     const cidade = randomFrom(CIDADES);
     const plano = randomFrom(PLANOS);
     const valorGasto = Math.round(Math.random() * 1000);
+    // carteirização de demonstração: 15 contatos do agente Bruno, 15 da
+    // agente Carla, 20 sem dono — assim cada perfil vê listas diferentes
+    const ownerId = i < 15 ? agent1.id : i < 30 ? agent2.id : undefined;
     const contact = await prisma.contact.create({
       data: {
         accountId: account.id,
         name: `Cliente Demo ${i + 1}`,
         phone: randomPhone(i),
         email: `cliente${i + 1}@demo.zenvia.dev`,
+        ownerId,
       },
     });
     await prisma.attributeValue.createMany({
@@ -315,6 +319,9 @@ async function main() {
 
   console.log("[seed] concluído! Login: demo@zenvia.dev / demo1234");
   console.log(`[seed] gestor: gestor@zenvia.dev / demo1234, agentes: agente1@zenvia.dev e agente2@zenvia.dev (senha demo1234)`);
+  console.log(
+    "[seed] carteiras: 15 contatos do agente1, 15 da agente2, 20 sem dono — entre como agente para ver a lista filtrada."
+  );
   void manager;
 }
 

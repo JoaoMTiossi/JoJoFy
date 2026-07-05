@@ -51,6 +51,7 @@ model User {
 
   agentStatus   AgentStatus?
   conversations Conversation[]
+  ownedContacts Contact[]      @relation("OwnedContacts")
 }
 
 model ApiKey {
@@ -75,6 +76,8 @@ model Contact {
   name      String
   phone     String?
   email     String?
+  ownerId   String? // carteira: usuário dono do contato (null = sem dono)
+  owner     User?    @relation("OwnedContacts", fields: [ownerId], references: [id])
   createdAt DateTime @default(now())
 
   attributeValues AttributeValue[]

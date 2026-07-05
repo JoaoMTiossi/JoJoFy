@@ -9,6 +9,7 @@ export interface CsvImportMapping {
   name: string; // header da coluna que vira o nome
   phone?: string;
   email?: string;
+  ownerEmail?: string; // header da coluna owner_email → dono (User) do contato
   attributes?: Record<string, string>; // AttributeDef.name -> header da coluna
 }
 
@@ -44,6 +45,10 @@ export async function importContactsFromCsv(
     if (!def) throw Errors.badRequest(`Atributo customizado "${defName}" não existe nesta conta`);
     defsByName.set(defName, def);
   }
+
+  // donos por e-mail (coluna opcional owner_email)
+  const accountUsers = await prisma.user.findMany({ where: { accountId } });
+  const usersByEmail = new Map(accountUsers.map((u) => [u.email.toLowerCase(), u]));
 
   const existingContacts = await prisma.contact.findMany({ where: { accountId } });
   const existingPhones = new Set(existingContacts.map((c) => c.phone).filter(Boolean) as string[]);
@@ -93,6 +98,19 @@ export async function importContactsFromCsv(
       continue;
     }
 
+    // coluna opcional owner_email → dono do contato; e-mail desconhecido é erro
+    // de linha (as demais linhas continuam sendo importadas)
+    let ownerId: string | undefined;
+    const rawOwnerEmail = mapping.ownerEmail ? record[mapping.ownerEmail]?.trim() : undefined;
+    if (rawOwnerEmail) {
+      const owner = usersByEmail.get(rawOwnerEmail.toLowerCase());
+      if (!owner) {
+        errors.push({ line, message: `Dono não encontrado: "${rawOwnerEmail}" não é um usuário desta conta` });
+        continue;
+      }
+      ownerId = owner.id;
+    }
+
     const dupInBatch = (phone && seenPhones.has(phone)) || (email && seenEmails.has(email));
     const existing =
       (phone && (existingByPhone.get(phone) ?? undefined)) || (email && (existingByEmail.get(email) ?? undefined));
@@ -112,7 +130,7 @@ export async function importContactsFromCsv(
     if (email) seenEmails.add(email);
 
     const contact = await prisma.contact.create({
-      data: { accountId, name, phone, email },
+      data: { accountId, name, phone, email, ownerId },
     });
 
     for (const [defName, header] of attributeDefEntries) {
